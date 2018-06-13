@@ -28,22 +28,24 @@ class Critic:
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
         # Add hidden layer(s) for state pathway
+        # FK-TODO: units=300
         net_states = layers.Dense(units=32, activation='relu')(states)
+        # FK-TODO: units=400
         net_states = layers.Dense(units=64, activation='relu')(net_states)
 
         # Add hidden layer(s) for action pathway
         net_actions = layers.Dense(units=32, activation='relu')(actions)
         net_actions = layers.Dense(units=64, activation='relu')(net_actions)
 
-        # Try different layer sizes, activations, add batch normalization, regularizers, etc.
+        # FK-TODO: Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
         net = layers.Activation('relu')(net)
 
-        # Add more layers to the combined network if needed
+        # FK-TODO: Add more layers to the combined network if needed
 
-        # Add final output layer to prduce action values (Q values)
+        # Add final output layer to produce action values (Q values)
         Q_values = layers.Dense(units=1, name='q_values')(net)
 
         # Create Keras model
