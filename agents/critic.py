@@ -33,7 +33,7 @@ class Critic:
         # net_states = layers.Dense(units=32, activation='relu')(states)
         # FK-TODO: units=400
         # net_states = layers.Dense(units=64, activation='relu')(net_states)
-        kernel_l2_reg = 1e-5
+        kernel_l2_reg = 1e-2
         net_states = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(states)
         net_states = layers.BatchNormalization()(net_states)
         net_states = layers.LeakyReLU(1e-2)(net_states)
