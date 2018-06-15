@@ -1,5 +1,4 @@
 import numpy as np
-from task import Task
 
 class ScoringAgentWrapper():
 
