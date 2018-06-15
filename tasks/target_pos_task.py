@@ -1,7 +1,7 @@
 import numpy as np
 from physics_sim import PhysicsSim
 
-class Task():
+class TargetPosTask():
     """Task (environment) that defines the goal and provides feedback to the agent."""
     def __init__(self, init_pose=None, init_velocities=None, 
         init_angle_velocities=None, runtime=5., target_pos=None):
