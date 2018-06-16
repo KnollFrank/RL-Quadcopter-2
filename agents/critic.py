@@ -34,20 +34,20 @@ class Critic:
         # FK-TODO: units=400
         # net_states = layers.Dense(units=64, activation='relu')(net_states)
         kernel_l2_reg = 1e-2
-        net_states = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(states)
+        net_states = layers.Dense(units=400, kernel_regularizer=regularizers.l2(kernel_l2_reg))(states)
         net_states = layers.BatchNormalization()(net_states)
-        net_states = layers.LeakyReLU(1e-2)(net_states)
+        net_states = layers.Activation('relu')(net_states)
 
-        net_states = layers.Dense(units=400, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net_states)
+        net_states = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net_states)
         net_states = layers.BatchNormalization()(net_states)
-        net_states = layers.LeakyReLU(1e-2)(net_states)
+        net_states = layers.Activation('relu')(net_states)
 
         # Add hidden layer(s) for action pathway
         # net_actions = layers.Dense(units=32, activation='relu')(actions)
         # net_actions = layers.Dense(units=64, activation='relu')(net_actions)
-        net_actions = layers.Dense(units=400, kernel_regularizer=regularizers.l2(kernel_l2_reg))(actions)
+        net_actions = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(actions)
         net_actions = layers.BatchNormalization()(net_actions)
-        net_actions = layers.LeakyReLU(1e-2)(net_actions)
+        net_actions = layers.Activation('relu')(net_actions)
 
         # FK-TODO: Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
@@ -58,7 +58,7 @@ class Critic:
         # FK-TODO: Add more layers to the combined network if needed
         net = layers.Dense(units=200, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net)
         net = layers.BatchNormalization()(net)
-        net = layers.LeakyReLU(1e-2)(net)
+        net = layers.Activation('relu')(net)
 
         # Add final output layer to produce action values (Q values)
         Q_values = layers.Dense(units=1, name='q_values')(net)

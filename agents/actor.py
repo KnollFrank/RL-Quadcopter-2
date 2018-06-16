@@ -35,17 +35,17 @@ class Actor:
         # net = layers.Dense(units=64, activation='relu')(net)
         # net = layers.Dense(units=32, activation='relu')(net)
         kernel_l2_reg = 1e-3
-        net = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(states)
+        net = layers.Dense(units=400, kernel_regularizer=regularizers.l2(kernel_l2_reg))(states)
         net = layers.BatchNormalization()(net)
-        net = layers.LeakyReLU(1e-2)(net)
+        net = layers.Activation('relu')(net)
 
-        net = layers.Dense(units=400, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net)
+        net = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net)
         net = layers.BatchNormalization()(net)
-        net = layers.LeakyReLU(1e-2)(net)
+        net = layers.Activation('relu')(net)
 
         net = layers.Dense(units=200, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net)
         net = layers.BatchNormalization()(net)
-        net = layers.LeakyReLU(1e-2)(net)
+        net = layers.Activation('relu')(net)
 
         # FK-TODO: Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
