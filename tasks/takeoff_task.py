@@ -18,24 +18,30 @@ class TakeoffTask():
             runtime: time limit for each episode
         """
         # Simulation
+        self.runtime = runtime
         self.sim = PhysicsSim(init_pose, init_velocities, init_angle_velocities, runtime) 
         self.action_repeat = 3
 
-        self.state_size = self.action_repeat * 6
+        self.state_size = self.action_repeat * len(self.create_non_repeated_state())
         self.action_low = 0
         self.action_high = 900
         self.action_size = 1
         
         self.target_z = 10.0 # target height (z position) to reach for successful takeoff
 
-    def get_reward(self):
+    def get_reward_done(self):
         """Uses current pose of sim to return reward."""
-        reward = -min(abs(self.target_z - self.sim.pose[2]), 20.0)  # reward = zero for matching target z, -ve as you go farther, upto -20
+        done = False
+        # reward = -min(abs(self.target_z - self.sim.pose[2]), 20.0)  # reward = zero for matching target z, -ve as you go farther, upto -20
+        reward = -abs(self.target_z - self.sim.pose[2])  # reward = zero for matching target z, -ve as you go farther, upto -20
         if self.sim.pose[2] >= self.target_z:  # agent has crossed the target height
             reward += 10.0  # bonus reward
+            done = True
+        elif self.sim.time > self.runtime:  # agent has run out of time
+            reward -= 10.0  # extra penalty
+            done = True
 
-        # return math.tanh(self.sim.pose[2])
-        return reward
+        return reward, done
 
     def step(self, rotor_speed):
         """Uses action to obtain next state, reward, done."""
@@ -44,13 +50,18 @@ class TakeoffTask():
         pose_all = []
         for _ in range(self.action_repeat):
             done = self.sim.next_timestep(rotor_speeds) # update the sim pose and velocities
-            reward += self.get_reward() 
-            pose_all.append(self.sim.pose)
+            non_repeated_reward, non_repeated_done = self.get_reward_done() 
+            reward += non_repeated_reward 
+            pose_all.append(self.create_non_repeated_state())
         next_state = np.concatenate(pose_all)
-        return next_state, reward, done
+        return next_state, reward, done or non_repeated_done
 
     def reset(self):
         """Reset the sim to start a new episode."""
         self.sim.reset()
-        state = np.concatenate([self.sim.pose] * self.action_repeat) 
+        state = np.concatenate([self.create_non_repeated_state()] * self.action_repeat) 
         return state
+
+    def create_non_repeated_state(self):
+        return np.array([self.sim.pose[2], self.sim.v[2], self.sim.linear_accel[2]])
+        # return np.array([self.sim.pose[2], self.sim.v[2]])
