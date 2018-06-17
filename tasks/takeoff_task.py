@@ -3,7 +3,6 @@ import math
 from physics_sim import PhysicsSim
 
 # adapted from https://github.com/udacity/RL-Quadcopter/blob/master/quad_controller_rl/src/quad_controller_rl/tasks/takeoff.py
-# rename to Takeoff and file to takeoff.py
 class TakeoffTask():
     """Task (environment) that defines the goal and provides feedback to the agent."""
     def __init__(self, init_pose=None, init_velocities=None, 
