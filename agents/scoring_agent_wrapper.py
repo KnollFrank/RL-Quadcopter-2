@@ -18,7 +18,7 @@ class ScoringAgentWrapper():
         self.total_reward += reward
         self.count += 1
         if done:
-            self.score = self.total_reward / float(self.count)
+            self.score = self.total_reward # / float(self.count)
             if self.score > self.best_score:
                 self.best_score = self.score
 

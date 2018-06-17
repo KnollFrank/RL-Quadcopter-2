@@ -1,13 +1,11 @@
-from keras import layers
-from keras import models
-from keras import optimizers
+from keras import layers, initializers, models, optimizers
 from keras import backend as K
 from keras import regularizers
 
 class Critic:
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, learning_rate):
         """Initialize parameters and build model.
 
         Params
@@ -19,8 +17,15 @@ class Critic:
         self.action_size = action_size
 
         # Initialize any other variables here
+        self.learning_rate = learning_rate
 
         self.build_model()
+
+    def create_block(self, units, inputs):
+        net = layers.Dense(units = units, kernel_regularizer = regularizers.l2(0.01))(inputs)
+        net = layers.BatchNormalization()(net)
+        net = layers.Activation('relu')(net)
+        return net
 
     def build_model(self):
         """Build a critic (value) network that maps (state, action) pairs -> Q-values."""
@@ -29,45 +34,30 @@ class Critic:
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
         # Add hidden layer(s) for state pathway
-        # FK-TODO: units=300
-        # net_states = layers.Dense(units=32, activation='relu')(states)
-        # FK-TODO: units=400
-        # net_states = layers.Dense(units=64, activation='relu')(net_states)
-        kernel_l2_reg = 1e-2
-        net_states = layers.Dense(units=400, kernel_regularizer=regularizers.l2(kernel_l2_reg))(states)
-        net_states = layers.BatchNormalization()(net_states)
-        net_states = layers.Activation('relu')(net_states)
-
-        net_states = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net_states)
-        net_states = layers.BatchNormalization()(net_states)
-        net_states = layers.Activation('relu')(net_states)
+        net_states = self.create_block(units = 32, inputs = states)
+        net_states = self.create_block(units = 64, inputs = net_states)
 
         # Add hidden layer(s) for action pathway
-        # net_actions = layers.Dense(units=32, activation='relu')(actions)
-        # net_actions = layers.Dense(units=64, activation='relu')(net_actions)
-        net_actions = layers.Dense(units=300, kernel_regularizer=regularizers.l2(kernel_l2_reg))(actions)
-        net_actions = layers.BatchNormalization()(net_actions)
-        net_actions = layers.Activation('relu')(net_actions)
+        net_actions = self.create_block(units = 32, inputs = actions)
+        net_actions = self.create_block(units = 64, inputs = net_actions)
 
-        # FK-TODO: Try different layer sizes, activations, add batch normalization, regularizers, etc.
+        # Try different layer sizes, activations, add batch normalization, regularizers, etc.
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
         net = layers.Activation('relu')(net)
 
-        # FK-TODO: Add more layers to the combined network if needed
-        net = layers.Dense(units=200, kernel_regularizer=regularizers.l2(kernel_l2_reg))(net)
-        net = layers.BatchNormalization()(net)
-        net = layers.Activation('relu')(net)
+        # Add more layers to the combined network if needed
+        net = self.create_block(units = 32, inputs = net)
 
         # Add final output layer to produce action values (Q values)
-        Q_values = layers.Dense(units=1, name='q_values')(net)
+        Q_values = layers.Dense(units=1, kernel_initializer = initializers.RandomNormal(mean=0.0, stddev=1e-4), name='q_values')(net)
 
         # Create Keras model
         self.model = models.Model(inputs=[states, actions], outputs=Q_values)
 
         # Define optimizer and compile model for training with built-in loss function
-        optimizer = optimizers.Adam()
+        optimizer = optimizers.Adam(lr=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss='mse')
 
         # Compute action gradients (derivative of Q values w.r.t. to actions)

@@ -2,7 +2,6 @@ import numpy as np
 import math
 from physics_sim import PhysicsSim
 
-# FK-TODO: DRY with other tasks
 # adapted from https://github.com/udacity/RL-Quadcopter/blob/master/quad_controller_rl/src/quad_controller_rl/tasks/takeoff.py
 # rename to Takeoff and file to takeoff.py
 class TakeoffTask():
@@ -20,7 +19,7 @@ class TakeoffTask():
         # Simulation
         self.runtime = runtime
         self.sim = PhysicsSim(init_pose, init_velocities, init_angle_velocities, runtime) 
-        self.action_repeat = 3
+        self.action_repeat = 1
 
         self.state_size = self.action_repeat * len(self.create_non_repeated_state())
         self.action_low = 0
@@ -32,13 +31,12 @@ class TakeoffTask():
     def get_reward_done(self):
         """Uses current pose of sim to return reward."""
         done = False
-        # reward = -min(abs(self.target_z - self.sim.pose[2]), 20.0)  # reward = zero for matching target z, -ve as you go farther, upto -20
-        reward = -abs(self.target_z - self.sim.pose[2])  # reward = zero for matching target z, -ve as you go farther, upto -20
-        if self.sim.pose[2] >= self.target_z:  # agent has crossed the target height
-            reward += 10.0  # bonus reward
+        reward = -min(abs(self.target_z - self.sim.pose[2]), 20.0)
+        if self.sim.pose[2] >= self.target_z:
+            reward += 10.0
             done = True
-        elif self.sim.time > self.runtime:  # agent has run out of time
-            reward -= 10.0  # extra penalty
+        elif self.sim.time > self.runtime:
+            reward -= 10.0
             done = True
 
         return reward, done
@@ -49,7 +47,7 @@ class TakeoffTask():
         reward = 0
         pose_all = []
         for _ in range(self.action_repeat):
-            done = self.sim.next_timestep(rotor_speeds) # update the sim pose and velocities
+            done = self.sim.next_timestep(rotor_speeds)
             non_repeated_reward, non_repeated_done = self.get_reward_done() 
             reward += non_repeated_reward 
             pose_all.append(self.create_non_repeated_state())
@@ -59,9 +57,8 @@ class TakeoffTask():
     def reset(self):
         """Reset the sim to start a new episode."""
         self.sim.reset()
-        state = np.concatenate([self.create_non_repeated_state()] * self.action_repeat) 
+        state = np.concatenate([self.create_non_repeated_state()] * self.action_repeat)
         return state
 
     def create_non_repeated_state(self):
         return np.array([self.sim.pose[2], self.sim.v[2], self.sim.linear_accel[2]])
-        # return np.array([self.sim.pose[2], self.sim.v[2]])
