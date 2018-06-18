@@ -21,44 +21,25 @@ class TakeoffTask():
                               init_velocities = np.array([0., 0., 0.]),
                               init_angle_velocities = np.array([0., 0., 0.]),
                               runtime = runtime) 
-        self.action_repeat = 1
 
-        self.state_size = self.action_repeat * len(self.create_non_repeated_state())
+        self.state_size = len(self.create_state())
         self.action_low = 0
         self.action_high = 900
         self.action_size = 1
         
-    def get_reward_done(self, actual_height, actual_time):
-        """Uses current pose of sim to return reward."""
-        done = False
-        reward = -min(abs(self.target_height - actual_height), 20.0)
-        if actual_height >= self.target_height: # agent has crossed the target height
-            reward += 10.0 # bonus reward
-            done = True
-        elif actual_time > self.runtime: # agent has run out of time
-            reward -= 10.0 # extra penalty
-            done = True
-
-        return reward, done
+    def get_reward(self, actual_height):
+        return -abs(actual_height - self.target_height)
 
     def step(self, rotor_speed):
         """Uses action to obtain next state, reward, done."""
-        rotor_speeds = rotor_speed * 4
-        reward = 0
-        pose_all = []
-        for _ in range(self.action_repeat):
-            done = self.sim.next_timestep(rotor_speeds)
-            non_repeated_reward, non_repeated_done = self.get_reward_done(self.sim.pose[2], self.sim.time) 
-            reward += non_repeated_reward 
-            pose_all.append(self.create_non_repeated_state())
-        next_state = np.concatenate(pose_all)
-        return next_state, reward, done or non_repeated_done
+        done = self.sim.next_timestep(rotor_speed * 4)
+        return self.create_state(), self.get_reward(self.sim.pose[2]), self.sim.pose[2] >= self.target_height or done
 
     def reset(self):
         """Reset the sim to start a new episode."""
         self.sim.reset()
-        state = np.concatenate([self.create_non_repeated_state()] * self.action_repeat)
+        state = [self.create_state()]
         return state
 
-    def create_non_repeated_state(self):
+    def create_state(self):
         return np.array([self.sim.pose[2], self.sim.v[2], self.sim.linear_accel[2]])
