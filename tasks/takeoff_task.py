@@ -14,6 +14,8 @@ class TakeoffTask():
             runtime: time limit for each episode
         """
         # Simulation
+        self.init_height = init_height
+        self.target_height = target_height
         self.runtime = runtime
         self.sim = PhysicsSim(init_pose = np.array([0., 0., init_height, 0., 0., 0.]),
                               init_velocities = np.array([0., 0., 0.]),
@@ -26,16 +28,14 @@ class TakeoffTask():
         self.action_high = 900
         self.action_size = 1
         
-        self.target_height = target_height
-
-    def get_reward_done(self, target_height, actual_height, actual_time, runtime):
+    def get_reward_done(self, actual_height, actual_time):
         """Uses current pose of sim to return reward."""
         done = False
-        reward = -min(abs(target_height - actual_height), 20.0)
-        if actual_height >= target_height: # agent has crossed the target height
+        reward = -min(abs(self.target_height - actual_height), 20.0)
+        if actual_height >= self.target_height: # agent has crossed the target height
             reward += 10.0 # bonus reward
             done = True
-        elif actual_time > runtime: # agent has run out of time
+        elif actual_time > self.runtime: # agent has run out of time
             reward -= 10.0 # extra penalty
             done = True
 
@@ -48,7 +48,7 @@ class TakeoffTask():
         pose_all = []
         for _ in range(self.action_repeat):
             done = self.sim.next_timestep(rotor_speeds)
-            non_repeated_reward, non_repeated_done = self.get_reward_done(self.target_height, self.sim.pose[2], self.sim.time, self.runtime) 
+            non_repeated_reward, non_repeated_done = self.get_reward_done(self.sim.pose[2], self.sim.time) 
             reward += non_repeated_reward 
             pose_all.append(self.create_non_repeated_state())
         next_state = np.concatenate(pose_all)
