@@ -2,7 +2,6 @@ import numpy as np
 import math
 from physics_sim import PhysicsSim
 
-# adapted from https://github.com/udacity/RL-Quadcopter/blob/master/quad_controller_rl/src/quad_controller_rl/tasks/takeoff.py
 class TakeoffTask():
     """Task (environment) that defines the goal and provides feedback to the agent."""
     def __init__(self, init_height, target_height, runtime=5):
