@@ -51,7 +51,9 @@ class Critic:
         net = self.create_block(units = 32, inputs = net)
 
         # Add final output layer to produce action values (Q values)
-        Q_values = layers.Dense(units=1, kernel_initializer = initializers.RandomNormal(mean=0.0, stddev=1e-4), name='q_values')(net)
+        Q_values = layers.Dense(units=1,
+                                kernel_initializer = initializers.RandomUniform(minval=-0.003, maxval=0.003),
+                                name='q_values')(net)
 
         # Create Keras model
         self.model = models.Model(inputs=[states, actions], outputs=Q_values)

@@ -46,7 +46,7 @@ class Actor:
         # Add final output layer with sigmoid activation
         raw_actions = layers.Dense(units = self.action_size,
                                    activation = 'sigmoid',
-                                   kernel_initializer = initializers.RandomNormal(mean=0.0, stddev=1e-4),
+                                   kernel_initializer = initializers.RandomUniform(minval=-0.003, maxval=0.003),
                                    name = 'raw_actions')(net)
 
         # Scale [0, 1] output for each action dimension to proper range
